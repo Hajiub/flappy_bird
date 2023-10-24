@@ -132,16 +132,25 @@ def reset_game():
     bird.rect.center = (bird.x, bird.y)
     score = 0
     return score
-run = True
 
-while run:
+
+
+while True:
 
     # handle events
     for event in pg.event.get():
         if event.type == pg.QUIT:
-            run = False
+            pg.quit()
+            sys.exit()
+        # start the game
         if event.type == pg.MOUSEBUTTONDOWN and not flying and not game_over:
             flying = True
+
+        # reset the game 
+        elif event.type == pg.MOUSEBUTTONDOWN and not flying and game_over:
+            game_over = False
+            flying = True
+            score = reset_game()
 
     # fill the screen
     screen.fill(SKY_COLOR)
@@ -157,20 +166,22 @@ while run:
             pipe_group.add(top_pipe)
             last_pipe = current_time
 
-    # Gameover if the bird touches ground
-    if bird.rect.bottom >= ground.rect.y and not game_over:
-        hit.play()
-        flying = False
-        game_over = True
+
 
     # Game over if the bird touches the pipe or the top of the screen
-    elif (
+    if (
         pg.sprite.groupcollide(bird_group, pipe_group, False, False)
         or bird.rect.top <= 0
     ) and not game_over:
         hit.play()
         die.play()
         game_over = True
+        
+    # Gameover if the bird touches ground
+    elif bird.rect.bottom >= ground.rect.y:
+        game_over = True
+        flying = False
+    
 
     # Score I stole this
     if len(pipe_group) > 0:
@@ -200,13 +211,8 @@ while run:
 
     # Draw the score
     draw_score(screen, score, font)
-
-    if game_over and pg.MOUSEBUTTONDOWN:
-        game_over = False
-        flying = False
-        score = reset_game()
+    
     pg.display.update()
     clock.tick(FPS)
 
-pg.quit()
-sys.exit()
+
